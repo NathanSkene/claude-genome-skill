@@ -1,12 +1,16 @@
 #!/bin/bash
-#PBS -N vep_annotate
 #PBS -l select=1:ncpus=8:mem=32gb
-#PBS -l walltime=8:00:00
+#PBS -l walltime=4:00:00
 #PBS -q v1_small72
-#PBS -o /rds/general/project/genome_analysis/live/GenomeAnalysis/results/vep.out
-#PBS -e /rds/general/project/genome_analysis/live/GenomeAnalysis/results/vep.err
 #
 # Standalone VEP annotation for nf-core/raredisease output
+# Supports whole-genome or per-chromosome mode via CHR variable.
+#
+# Usage:
+#   Whole genome: qsub run_vep.sh
+#   Single chr:   qsub -N vep_chr1 -v CHR=chr1 run_vep.sh
+#   Parallel:     bash run_vep_parallel.sh  (submits all chromosomes)
+#
 # Input: DeepVariant VCF from raredisease pipeline
 # Output: VEP-annotated VCF ready for triage engine
 
@@ -25,16 +29,25 @@ REFS="${BASE}/references"
 CONTAINERS="${BASE}/containers"
 
 # Input: DeepVariant VCF from nf-core/raredisease call_snv output
-INPUT_VCF="$(readlink -f "${1:-${RESULTS}/call_snv/genome/GFXC087577_case_snv.vcf.gz}")"
+INPUT_VCF="$(readlink -f "${INPUT_VCF:-${RESULTS}/call_snv/genome/GFXC087577_case_snv.vcf.gz}")"
 
 if [[ ! -f "${INPUT_VCF}" ]]; then
-    echo "ERROR: Cannot find DeepVariant VCF. Provide path as argument."
+    echo "ERROR: Cannot find DeepVariant VCF at: ${INPUT_VCF}"
     echo "Usage: qsub -v INPUT_VCF=/path/to/vcf run_vep.sh"
     exit 1
 fi
 
-OUTPUT_VCF="${RESULTS}/vep/GFXC087577.vep.vcf.gz"
-mkdir -p "${RESULTS}/vep"
+# Per-chromosome mode: CHR variable (e.g. chr1, chrX)
+# If CHR is set, annotate only that chromosome; otherwise annotate everything
+CHR="${CHR:-}"
+
+if [[ -n "${CHR}" ]]; then
+    OUTPUT_VCF="${RESULTS}/vep/per_chr/GFXC087577.vep.${CHR}.vcf.gz"
+    mkdir -p "${RESULTS}/vep/per_chr"
+else
+    OUTPUT_VCF="${RESULTS}/vep/GFXC087577.vep.vcf.gz"
+    mkdir -p "${RESULTS}/vep"
+fi
 
 # VEP cache and plugin data
 VEP_CACHE="${REFS}/vep"
@@ -51,11 +64,12 @@ FASTA="${REFS}/genome/Homo_sapiens_assembly38.fasta"
 VEP_SIF="${CONTAINERS}/ensembl-vep_114.0.sif"
 
 echo "============================================================"
-echo "VEP Annotation"
+echo "VEP Annotation${CHR:+ (${CHR})}"
 echo "============================================================"
 echo "Input:  ${INPUT_VCF}"
 echo "Output: ${OUTPUT_VCF}"
 echo "Cache:  ${VEP_CACHE}"
+echo "Chr:    ${CHR:-all}"
 echo "Date:   $(date '+%Y-%m-%d %H:%M:%S')"
 echo "============================================================"
 echo
@@ -69,6 +83,20 @@ if [[ ! -f "${VEP_SIF}" ]]; then
     echo
 fi
 
+# --- Extract chromosome if per-chr mode --------------------------------------
+if [[ -n "${CHR}" ]]; then
+    CHR_VCF="${RESULTS}/vep/per_chr/input.${CHR}.vcf.gz"
+    echo "Extracting ${CHR} from input VCF..."
+    bcftools view -r "${CHR}" "${INPUT_VCF}" -Oz -o "${CHR_VCF}"
+    bcftools index -t "${CHR_VCF}"
+    VEP_INPUT="${CHR_VCF}"
+    VARIANTS_IN=$(bcftools view -H "${CHR_VCF}" | wc -l)
+    echo "  -> ${VARIANTS_IN} variants on ${CHR}"
+    echo
+else
+    VEP_INPUT="${INPUT_VCF}"
+fi
+
 # --- Run VEP -----------------------------------------------------------------
 echo "Running VEP..."
 
@@ -77,11 +105,12 @@ apptainer exec \
     --bind "${RESULTS}:${RESULTS}" \
     "${VEP_SIF}" \
     vep \
-    --input_file "${INPUT_VCF}" \
+    --input_file "${VEP_INPUT}" \
     --output_file STDOUT \
     --format vcf \
     --vcf \
     --force_overwrite \
+    --check_existing \
     --offline \
     --cache \
     --dir_cache "${VEP_CACHE}" \
@@ -103,6 +132,11 @@ apptainer exec \
     | bcftools view -Oz -o "${OUTPUT_VCF}"
 
 bcftools index -t "${OUTPUT_VCF}"
+
+# Clean up per-chr input extract
+if [[ -n "${CHR}" && -f "${CHR_VCF}" ]]; then
+    rm -f "${CHR_VCF}" "${CHR_VCF}.tbi"
+fi
 
 echo
 echo "VEP annotation complete."
