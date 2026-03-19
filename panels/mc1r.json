@@ -1,0 +1,15 @@
+{
+  "name": "MC1R Red Hair Panel",
+  "description": "8 key MC1R variants associated with red hair phenotype. High-penetrance variants (R/R) in bold.",
+  "reference": "GRCh37",
+  "snps": [
+    {"rsid": "rs1805005", "gene": "MC1R", "chrom": "16", "pos": 89985844, "ref": "G", "alt": "T", "protein": "V60L", "penetrance": "low", "trait": "red hair (r variant)"},
+    {"rsid": "rs1805006", "gene": "MC1R", "chrom": "16", "pos": 89985918, "ref": "C", "alt": "A", "protein": "D84E", "penetrance": "high", "trait": "red hair (R variant)"},
+    {"rsid": "rs2228479", "gene": "MC1R", "chrom": "16", "pos": 89985940, "ref": "G", "alt": "A", "protein": "V92M", "penetrance": "low", "trait": "red hair (r variant)"},
+    {"rsid": "rs11547464", "gene": "MC1R", "chrom": "16", "pos": 89986091, "ref": "G", "alt": "A", "protein": "R142H", "penetrance": "high", "trait": "red hair (R variant)"},
+    {"rsid": "rs1805007", "gene": "MC1R", "chrom": "16", "pos": 89986117, "ref": "C", "alt": "T", "protein": "R151C", "penetrance": "high", "trait": "red hair (R variant)"},
+    {"rsid": "rs1110400", "gene": "MC1R", "chrom": "16", "pos": 89986130, "ref": "T", "alt": "C", "protein": "I155T", "penetrance": "high", "trait": "red hair (R variant)"},
+    {"rsid": "rs1805008", "gene": "MC1R", "chrom": "16", "pos": 89986144, "ref": "C", "alt": "T", "protein": "R160W", "penetrance": "high", "trait": "red hair (R variant)"},
+    {"rsid": "rs1805009", "gene": "MC1R", "chrom": "16", "pos": 89986546, "ref": "G", "alt": "C", "protein": "D294H", "penetrance": "high", "trait": "red hair (R variant)"}
+  ]
+}

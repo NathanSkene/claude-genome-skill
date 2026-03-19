@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.vcf.gz
+*.vcf.gz.tbi
+*.vcf.gz.csi
+prs_results.json
