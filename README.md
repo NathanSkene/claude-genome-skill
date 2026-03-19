@@ -20,10 +20,17 @@ All queries run locally against your VCF. Annotation uses free public APIs (MyVa
 
 ### 1. Get your genome
 
-You need a VCF file from whole genome sequencing. Providers:
+You need a VCF file from whole genome sequencing.
+
+**Buy your own sequencing:**
 - [Dante Labs](https://www.dantelabs.com/) (~$200, 30x WGS)
 - [Nebula Genomics](https://nebula.org/) (~$250, 30x WGS)
 - [23andMe](https://www.23andme.com/) (export VCF from settings — genotyping array, not WGS)
+
+**Or test with public genomes (no purchase needed):**
+- [Personal Genome Project (PGP)](https://www.personalgenomes.org/) — Hundreds of volunteers have made their WGS data fully public. Download VCFs from the [PGP Harvard data portal](https://my.pgp-hms.org/public_genetic_data). Try [hu661BA7 (GRCh38)](https://my.pgp-hms.org/profile/hu661BA7) — George Church's genome, one of the most studied public genomes.
+- [1000 Genomes Project](https://www.internationalgenome.org/) — Population-scale WGS data. Individual sample VCFs available from the [IGSR data portal](https://www.internationalgenome.org/data-portal/sample). Try sample NA12878 (well-characterised reference genome).
+- [openSNP](https://opensnp.org/) — Community-shared genotyping data (mostly array-based, not WGS, but works for variant lookups and panel extraction).
 
 ### 2. Install dependencies
 
