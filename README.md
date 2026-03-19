@@ -61,28 +61,23 @@ You need a VCF file from whole genome sequencing.
 
 Most sequencing providers deliver raw data as FASTQ or BAM files, not VCFs. You need to run a variant calling pipeline.
 
-**Recommended: [nf-core/sarek](https://nf-co.re/sarek)**
+**Recommended: [nf-core/raredisease](https://nf-co.re/raredisease)**
+
+This is what we actually used. Raredisease handles the full workflow in one pipeline: alignment → variant calling (DeepVariant) → VEP annotation → clinical ranking. The triage and report scripts in this repo were built to consume its output.
 
 ```bash
-# From FASTQ files
-nextflow run nf-core/sarek \
+nextflow run nf-core/raredisease \
     --input samplesheet.csv \
     --genome GRCh38 \
-    --tools haplotypecaller \
-    -profile docker
-
-# From BAM files (skip alignment)
-nextflow run nf-core/sarek \
-    --input samplesheet.csv \
-    --step variant_calling \
-    --genome GRCh38 \
-    --tools haplotypecaller \
+    --analysis_type wgs \
     -profile docker
 ```
 
+**Alternative: [nf-core/sarek](https://nf-co.re/sarek)** — If you only need variant calling without the clinical annotation layer, sarek is lighter weight and uses GATK HaplotypeCaller.
+
 See [claude-nextflow-skill](https://github.com/NathanSkene/claude-nextflow-skill) for automated samplesheet generation and pipeline orchestration.
 
-**Running on HPC:** If you're on Imperial's CX3, see [claude-imperial-hpc-skill](https://github.com/NathanSkene/claude-imperial-hpc-skill) for PBS Pro configuration, or use the scripts in `hpc/` (WIP).
+**Running on HPC:** If you're on Imperial's CX3, see [claude-imperial-hpc-skill](https://github.com/NathanSkene/claude-imperial-hpc-skill) for PBS Pro configuration, or use the scripts in `hpc/` (WIP — these are configured for nf-core/raredisease on PBS Pro).
 
 ### 3. Install skill dependencies
 
