@@ -1,0 +1,2 @@
+sample,lane,fastq_1,fastq_2,sex,phenotype,case_id
+YOUR_SAMPLE,Lane_1,/rds/general/user/YOUR_USERNAME/home/GenomeAnalysis/fastq/YOUR_SAMPLE_R1.fastq.gz,/rds/general/user/YOUR_USERNAME/home/GenomeAnalysis/fastq/YOUR_SAMPLE_R2.fastq.gz,1,0,YOUR_SAMPLE_case

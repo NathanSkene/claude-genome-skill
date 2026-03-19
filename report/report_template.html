@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WGS Analysis Report - {{ sample_id }}</title>
+<style>
+  :root {
+    --tier1: #dc3545;
+    --tier2: #fd7e14;
+    --tier3: #ffc107;
+    --tier4: #6c757d;
+    --pass: #28a745;
+    --fail: #dc3545;
+    --uncertain: #ffc107;
+    --bg: #ffffff;
+    --text: #212529;
+    --muted: #6c757d;
+    --border: #dee2e6;
+    --header-bg: #f8f9fa;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--bg);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Disclaimer banner */
+  .disclaimer {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+  .disclaimer strong { color: #856404; }
+
+  /* Header */
+  .report-header {
+    border-bottom: 3px solid var(--text);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .report-header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 4px;
+  }
+  .report-header .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+  }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .summary-card {
+    background: var(--header-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .summary-card .label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .summary-card .value {
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 12px 16px;
+    background: var(--header-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    user-select: none;
+  }
+  .section-header h2 {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+  .section-header .toggle {
+    font-size: 1.2rem;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .section-header.collapsed .toggle {
+    transform: rotate(-90deg);
+  }
+  .section-body {
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+  }
+  .section-body.collapsed {
+    display: none;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 12px 0;
+  }
+  th {
+    background: var(--header-bg);
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  th:hover { background: #e9ecef; }
+  th .sort-arrow { font-size: 0.7rem; margin-left: 4px; }
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:hover { background: #f8f9fa; }
+
+  /* Tier badges */
+  .tier { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; color: white; }
+  .tier-1 { background: var(--tier1); }
+  .tier-2 { background: var(--tier2); }
+  .tier-3 { background: var(--tier3); color: var(--text); }
+  .tier-4 { background: var(--tier4); }
+
+  /* Validation badges */
+  .val-pass { color: var(--pass); font-weight: 600; }
+  .val-fail { color: var(--fail); font-weight: 600; }
+  .val-uncertain { color: var(--uncertain); font-weight: 600; }
+
+  /* ClinVar significance */
+  .clinsig-pathogenic { color: var(--fail); font-weight: 600; }
+  .clinsig-likely-pathogenic { color: #e07000; font-weight: 600; }
+  .clinsig-vus { color: var(--uncertain); }
+  .clinsig-benign { color: var(--pass); }
+
+  /* Monitoring suggestions */
+  .monitoring {
+    background: #e8f4fd;
+    border-left: 4px solid #0d6efd;
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .monitoring h4 { color: #0d6efd; margin-bottom: 4px; }
+
+  /* Methods */
+  .methods { font-size: 0.85rem; color: var(--muted); }
+  .methods dt { font-weight: 600; margin-top: 8px; }
+  .methods dd { margin-left: 16px; }
+
+  /* Print styles */
+  @media print {
+    body { max-width: none; padding: 0; font-size: 10pt; }
+    .section-header { break-after: avoid; }
+    .section-body { break-inside: avoid; }
+    .section-body.collapsed { display: block !important; }
+    .toggle { display: none; }
+    table { font-size: 8pt; }
+    .disclaimer { border-width: 1px; }
+    .no-print { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="disclaimer">
+  <strong>RESEARCH USE ONLY</strong> &mdash; This report is generated from consumer-grade whole genome sequencing
+  (Dante Labs) using a research re-analysis pipeline. Findings have NOT been confirmed by
+  a CLIA/UKAS-accredited laboratory. Variants classified outside ClinVar are based on computational
+  prediction only. Do not make medical decisions based on this report without clinical-grade confirmation.
+</div>
+
+<div class="report-header">
+  <h1>Whole Genome Sequencing Analysis Report</h1>
+  <div class="subtitle">Sample: {{ sample_id }} | Generated: {{ report_date }} | Build: {{ genome_build }}</div>
+</div>
+
+<!-- Section 1: Patient Summary + QC -->
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="label">Sample ID</div>
+    <div class="value">{{ sample_id }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Mean Coverage</div>
+    <div class="value">{{ mean_coverage }}x</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Total Variants</div>
+    <div class="value">{{ total_variants }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Tier 1 Findings</div>
+    <div class="value" style="color: var(--tier1);">{{ tier1_count }}</div>
+  </div>
+  <div class="summary-card">
+    <div class="label">Tier 2 Findings</div>
+    <div class="value" style="color: var(--tier2);">{{ tier2_count }}</div>
+  </div>
+</div>
+
+<!-- Section 2: Primary Findings (ClinVar P/LP) -->
+<div class="section" id="section-primary">
+  <div class="section-header" onclick="toggleSection('primary')">
+    <h2>Primary Findings (ClinVar Pathogenic / Likely Pathogenic)</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-primary">
+    {% if primary_findings %}
+    <table id="table-primary">
+      <thead>
+        <tr>
+          <th onclick="sortTable('table-primary', 0)">Gene <span class="sort-arrow"></span></th>
+          <th onclick="sortTable('table-primary', 1)">Variant <span class="sort-arrow"></span></th>
+          <th onclick="sortTable('table-primary', 2)">rsID</th>
+          <th onclick="sortTable('table-primary', 3)">ClinVar</th>
+          <th onclick="sortTable('table-primary', 4)">Condition</th>
+          <th onclick="sortTable('table-primary', 5)">Genotype</th>
+          <th onclick="sortTable('table-primary', 6)">Tier</th>
+          <th onclick="sortTable('table-primary', 7)">Validation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in primary_findings %}
+        <tr>
+          <td><strong>{{ v.gene }}</strong></td>
+          <td>{{ v.hgvs }}</td>
+          <td>{{ v.rsid }}</td>
+          <td class="clinsig-{{ v.clinsig_class }}">{{ v.clinsig }}</td>
+          <td>{{ v.condition }}</td>
+          <td>{{ v.genotype }}</td>
+          <td><span class="tier tier-{{ v.tier }}">Tier {{ v.tier }}</span></td>
+          <td class="val-{{ v.validation|lower }}">{{ v.validation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No ClinVar Pathogenic or Likely Pathogenic variants detected.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 3: Oligodontia + Ectodermal Dysplasia -->
+<div class="section" id="section-oligodontia">
+  <div class="section-header" onclick="toggleSection('oligodontia')">
+    <h2>Oligodontia &amp; Ectodermal Dysplasia Analysis</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-oligodontia">
+    {% if oligodontia_variants %}
+    <table id="table-oligodontia">
+      <thead>
+        <tr>
+          <th onclick="sortTable('table-oligodontia', 0)">Gene</th>
+          <th onclick="sortTable('table-oligodontia', 1)">Variant</th>
+          <th onclick="sortTable('table-oligodontia', 2)">rsID</th>
+          <th onclick="sortTable('table-oligodontia', 3)">Consequence</th>
+          <th onclick="sortTable('table-oligodontia', 4)">ClinVar</th>
+          <th onclick="sortTable('table-oligodontia', 5)">gnomAD AF</th>
+          <th onclick="sortTable('table-oligodontia', 6)">Genotype</th>
+          <th onclick="sortTable('table-oligodontia', 7)">Inheritance</th>
+          <th onclick="sortTable('table-oligodontia', 8)">Conditions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in oligodontia_variants %}
+        <tr>
+          <td><strong>{{ v.gene }}</strong></td>
+          <td>{{ v.hgvs }}</td>
+          <td>{{ v.rsid }}</td>
+          <td>{{ v.consequence }}</td>
+          <td class="clinsig-{{ v.clinsig_class }}">{{ v.clinsig }}</td>
+          <td>{{ v.gnomad_af }}</td>
+          <td>{{ v.genotype }}</td>
+          <td>{{ v.inheritance }}</td>
+          <td>{{ v.conditions }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No coding or splice-region variants detected in the oligodontia/ectodermal dysplasia gene panel.</p>
+    {% endif %}
+
+    {% if oligodontia_monitoring %}
+    <div class="monitoring">
+      <h4>Monitoring Suggestions</h4>
+      {{ oligodontia_monitoring }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 4: Pigmentation + Red Hair Genetics -->
+<div class="section" id="section-pigmentation">
+  <div class="section-header" onclick="toggleSection('pigmentation')">
+    <h2>Pigmentation &amp; Red Hair Genetics</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-pigmentation">
+    {% if pigmentation_variants %}
+    <table id="table-pigmentation">
+      <thead>
+        <tr>
+          <th onclick="sortTable('table-pigmentation', 0)">Gene</th>
+          <th onclick="sortTable('table-pigmentation', 1)">rsID</th>
+          <th onclick="sortTable('table-pigmentation', 2)">Variant</th>
+          <th onclick="sortTable('table-pigmentation', 3)">Genotype</th>
+          <th onclick="sortTable('table-pigmentation', 4)">Effect</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in pigmentation_variants %}
+        <tr>
+          <td><strong>{{ v.gene }}</strong></td>
+          <td>{{ v.rsid }}</td>
+          <td>{{ v.hgvs }}</td>
+          <td>{{ v.genotype }}</td>
+          <td>{{ v.effect }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No key pigmentation variants found.</p>
+    {% endif %}
+
+    {% if pigmentation_summary %}
+    <div class="monitoring">
+      <h4>Pigmentation Prediction Summary</h4>
+      {{ pigmentation_summary }}
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 5: High-Impact Non-ClinVar -->
+<div class="section" id="section-highimpact">
+  <div class="section-header" onclick="toggleSection('highimpact')">
+    <h2>High-Impact Non-ClinVar Variants</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-highimpact">
+    {% if highimpact_variants %}
+    <table id="table-highimpact">
+      <thead>
+        <tr>
+          <th onclick="sortTable('table-highimpact', 0)">Gene</th>
+          <th onclick="sortTable('table-highimpact', 1)">Variant</th>
+          <th onclick="sortTable('table-highimpact', 2)">Consequence</th>
+          <th onclick="sortTable('table-highimpact', 3)">CADD</th>
+          <th onclick="sortTable('table-highimpact', 4)">SIFT</th>
+          <th onclick="sortTable('table-highimpact', 5)">PolyPhen</th>
+          <th onclick="sortTable('table-highimpact', 6)">gnomAD AF</th>
+          <th onclick="sortTable('table-highimpact', 7)">Genotype</th>
+          <th onclick="sortTable('table-highimpact', 8)">Tier</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in highimpact_variants %}
+        <tr>
+          <td><strong>{{ v.gene }}</strong></td>
+          <td>{{ v.hgvs }}</td>
+          <td>{{ v.consequence }}</td>
+          <td>{{ v.cadd }}</td>
+          <td>{{ v.sift }}</td>
+          <td>{{ v.polyphen }}</td>
+          <td>{{ v.gnomad_af }}</td>
+          <td>{{ v.genotype }}</td>
+          <td><span class="tier tier-{{ v.tier }}">Tier {{ v.tier }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p>No high-impact non-ClinVar variants meeting reporting thresholds.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 6: Loss-of-Function Burden -->
+<div class="section" id="section-lof">
+  <div class="section-header" onclick="toggleSection('lof')">
+    <h2>Loss-of-Function Variant Burden</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-lof">
+    {% if lof_variants %}
+    <table id="table-lof">
+      <thead>
+        <tr>
+          <th onclick="sortTable('table-lof', 0)">Gene</th>
+          <th onclick="sortTable('table-lof', 1)">Variant</th>
+          <th onclick="sortTable('table-lof', 2)">Type</th>
+          <th onclick="sortTable('table-lof', 3)">gnomAD AF</th>
+          <th onclick="sortTable('table-lof', 4)">pLI</th>
+          <th onclick="sortTable('table-lof', 5)">Genotype</th>
+          <th onclick="sortTable('table-lof', 6)">Validation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in lof_variants %}
+        <tr>
+          <td><strong>{{ v.gene }}</strong></td>
+          <td>{{ v.hgvs }}</td>
+          <td>{{ v.lof_type }}</td>
+          <td>{{ v.gnomad_af }}</td>
+          <td>{{ v.pli }}</td>
+          <td>{{ v.genotype }}</td>
+          <td class="val-{{ v.validation|lower }}">{{ v.validation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="monitoring">
+      <h4>LoF Summary</h4>
+      <p>Total LoF variants: {{ lof_total }} | In constrained genes (pLI &gt; 0.9): {{ lof_constrained }}</p>
+    </div>
+    {% else %}
+    <p>No high-confidence loss-of-function variants detected.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 7: ACMG Secondary Findings -->
+<div class="section" id="section-acmg">
+  <div class="section-header" onclick="toggleSection('acmg')">
+    <h2>ACMG Secondary Findings (v3.3)</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-acmg">
+    {% if acmg_findings %}
+    <table id="table-acmg">
+      <thead>
+        <tr>
+          <th onclick="sortTable('table-acmg', 0)">Gene</th>
+          <th onclick="sortTable('table-acmg', 1)">Variant</th>
+          <th onclick="sortTable('table-acmg', 2)">ClinVar</th>
+          <th onclick="sortTable('table-acmg', 3)">Condition</th>
+          <th onclick="sortTable('table-acmg', 4)">Inheritance</th>
+          <th onclick="sortTable('table-acmg', 5)">Genotype</th>
+          <th onclick="sortTable('table-acmg', 6)">Validation</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in acmg_findings %}
+        <tr>
+          <td><strong>{{ v.gene }}</strong></td>
+          <td>{{ v.hgvs }}</td>
+          <td class="clinsig-{{ v.clinsig_class }}">{{ v.clinsig }}</td>
+          <td>{{ v.condition }}</td>
+          <td>{{ v.inheritance }}</td>
+          <td>{{ v.genotype }}</td>
+          <td class="val-{{ v.validation|lower }}">{{ v.validation }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if acmg_monitoring %}
+    <div class="monitoring">
+      <h4>Actionable Monitoring Suggestions</h4>
+      {{ acmg_monitoring }}
+    </div>
+    {% endif %}
+    {% else %}
+    <p>No ACMG v3.3 reportable secondary findings (P/LP) detected across 81 genes.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Section 8: Appendix -->
+<div class="section" id="section-appendix">
+  <div class="section-header" onclick="toggleSection('appendix')">
+    <h2>Appendix: Methods &amp; Software Versions</h2>
+    <span class="toggle">&#9660;</span>
+  </div>
+  <div class="section-body" id="body-appendix">
+    <dl class="methods">
+      <dt>Sequencing</dt>
+      <dd>{{ sequencing_platform }}</dd>
+
+      <dt>Alignment</dt>
+      <dd>{{ alignment_method }}</dd>
+
+      <dt>Variant Calling</dt>
+      <dd>{{ variant_caller }}</dd>
+
+      <dt>Annotation</dt>
+      <dd>{{ annotation_tools }}</dd>
+
+      <dt>Reference Genome</dt>
+      <dd>{{ genome_build }} ({{ reference_fasta }})</dd>
+
+      <dt>Population Frequency</dt>
+      <dd>{{ population_db }}</dd>
+
+      <dt>Clinical Databases</dt>
+      <dd>ClinVar ({{ clinvar_version }}), OMIM</dd>
+
+      <dt>In Silico Predictors</dt>
+      <dd>CADD v{{ cadd_version }}, SIFT, PolyPhen-2, REVEL</dd>
+
+      <dt>Pipeline</dt>
+      <dd>{{ pipeline_name }} v{{ pipeline_version }}</dd>
+
+      <dt>Report Generated</dt>
+      <dd>{{ report_date }}</dd>
+    </dl>
+
+    <h3 style="margin-top: 16px;">QC Metrics</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for metric in qc_metrics %}
+        <tr>
+          <td>{{ metric.name }}</td>
+          <td>{{ metric.value }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Collapsible sections
+  function toggleSection(id) {
+    const header = document.querySelector('#section-' + id + ' .section-header');
+    const body = document.getElementById('body-' + id);
+    header.classList.toggle('collapsed');
+    body.classList.toggle('collapsed');
+  }
+
+  // Sortable tables
+  function sortTable(tableId, colIndex) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const header = table.querySelectorAll('th')[colIndex];
+
+    // Toggle sort direction
+    const currentDir = header.dataset.sortDir || 'asc';
+    const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+    // Clear other headers
+    table.querySelectorAll('th').forEach(th => {
+      th.dataset.sortDir = '';
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = '';
+    });
+
+    header.dataset.sortDir = newDir;
+    const arrow = header.querySelector('.sort-arrow');
+    if (arrow) arrow.textContent = newDir === 'asc' ? '\u25B2' : '\u25BC';
+
+    rows.sort((a, b) => {
+      let aVal = a.cells[colIndex]?.textContent.trim() || '';
+      let bVal = b.cells[colIndex]?.textContent.trim() || '';
+
+      // Try numeric sort
+      const aNum = parseFloat(aVal);
+      const bNum = parseFloat(bVal);
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        return newDir === 'asc' ? aNum - bNum : bNum - aNum;
+      }
+
+      // String sort
+      return newDir === 'asc'
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+  }
+</script>
+
+</body>
+</html>

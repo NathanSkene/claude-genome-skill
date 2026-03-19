@@ -1,0 +1,2 @@
+sampleset,vcf_path,bfile_path,pfile_path,chrom
+YOUR_SAMPLE,/rds/general/user/YOUR_USERNAME/home/GenomeAnalysis/genome.rsid.vcf.gz,,,

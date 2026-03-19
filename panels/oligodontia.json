@@ -1,0 +1,109 @@
+{
+  "name": "Oligodontia / Ectodermal Dysplasia",
+  "version": "1.0",
+  "genome_build": "GRCh38",
+  "description": "8-gene panel for oligodontia and ectodermal dysplasia syndromes. Curated from PanelApp, OMIM, and primary literature.",
+  "genes": [
+    {
+      "symbol": "WNT10A",
+      "ensembl": "ENSG00000135925",
+      "chrom": "chr2",
+      "start": 218843424,
+      "end": 218860903,
+      "inheritance": "AD/AR",
+      "conditions": [
+        "Odonto-onycho-dermal dysplasia (OMIM:257980)",
+        "Schopf-Schulz-Passarge syndrome (OMIM:224750)",
+        "Selective tooth agenesis type 4 (OMIM:150400)"
+      ],
+      "omim_gene": 606268
+    },
+    {
+      "symbol": "PAX9",
+      "ensembl": "ENSG00000198048",
+      "chrom": "chr14",
+      "start": 36658534,
+      "end": 36678196,
+      "inheritance": "AD",
+      "conditions": [
+        "Selective tooth agenesis type 3 (OMIM:604625)"
+      ],
+      "omim_gene": 167416
+    },
+    {
+      "symbol": "MSX1",
+      "ensembl": "ENSG00000163132",
+      "chrom": "chr4",
+      "start": 4860866,
+      "end": 4864580,
+      "inheritance": "AD",
+      "conditions": [
+        "Selective tooth agenesis type 1 (OMIM:106600)",
+        "Orofacial cleft 5 (OMIM:608874)"
+      ],
+      "omim_gene": 142983
+    },
+    {
+      "symbol": "LRP6",
+      "ensembl": "ENSG00000070018",
+      "chrom": "chr12",
+      "start": 12148728,
+      "end": 12297993,
+      "inheritance": "AD",
+      "conditions": [
+        "Selective tooth agenesis type 7 (OMIM:616724)"
+      ],
+      "omim_gene": 603507
+    },
+    {
+      "symbol": "AXIN2",
+      "ensembl": "ENSG00000168646",
+      "chrom": "chr17",
+      "start": 65528544,
+      "end": 65561742,
+      "inheritance": "AD",
+      "conditions": [
+        "Oligodontia-colorectal cancer syndrome (OMIM:608615)"
+      ],
+      "omim_gene": 604025
+    },
+    {
+      "symbol": "EDA",
+      "ensembl": "ENSG00000158813",
+      "chrom": "chrX",
+      "start": 69223544,
+      "end": 69690698,
+      "inheritance": "XLR",
+      "conditions": [
+        "Hypohidrotic ectodermal dysplasia type 1 (OMIM:305100)"
+      ],
+      "omim_gene": 300451
+    },
+    {
+      "symbol": "EDAR",
+      "ensembl": "ENSG00000135960",
+      "chrom": "chr2",
+      "start": 108894440,
+      "end": 108989719,
+      "inheritance": "AD/AR",
+      "conditions": [
+        "Hypohidrotic ectodermal dysplasia type 10A (OMIM:129490)",
+        "Hypohidrotic ectodermal dysplasia type 10B (OMIM:224900)"
+      ],
+      "omim_gene": 604095
+    },
+    {
+      "symbol": "EDARADD",
+      "ensembl": "ENSG00000186197",
+      "chrom": "chr1",
+      "start": 236431015,
+      "end": 236462442,
+      "inheritance": "AD/AR",
+      "conditions": [
+        "Hypohidrotic ectodermal dysplasia type 11A (OMIM:614940)",
+        "Hypohidrotic ectodermal dysplasia type 11B (OMIM:614941)"
+      ],
+      "omim_gene": 606603
+    }
+  ]
+}

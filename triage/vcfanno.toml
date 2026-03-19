@@ -1,0 +1,43 @@
+# vcfanno configuration for WGS variant triage (GRCh38)
+# Annotates VCF with genomic context for artifact detection and tiering
+#
+# CONFIGURE: Update paths below for your HPC environment
+# Example: /rds/general/user/YOUR_USERNAME/home/GenomeAnalysis/references/triage/
+
+# ============================================================================
+# Problematic region annotations (artifact-prone)
+# ============================================================================
+
+[[annotation]]
+file = "/path/to/references/triage/genomicSuperDups.bed.gz"
+columns = [4]
+names = ["SEGDUP"]
+ops = ["flag"]
+
+[[annotation]]
+file = "/path/to/references/triage/LCR-hs38.bed.gz"
+columns = [4]
+names = ["LCR"]
+ops = ["flag"]
+
+[[annotation]]
+file = "/path/to/references/triage/simpleRepeat.bed.gz"
+columns = [4]
+names = ["SIMPLE_REPEAT"]
+ops = ["flag"]
+
+[[annotation]]
+file = "/path/to/references/triage/trf.bed.gz"
+columns = [4]
+names = ["TRF"]
+ops = ["flag"]
+
+# ============================================================================
+# Population frequency (gnomAD v4.1 per-chromosome sites)
+# vcfanno doesn't support multiple files natively — use merged or per-chr
+# For now, annotate per-chromosome in run_triage.sh before vcfanno
+# ============================================================================
+
+# NOTE: gnomAD annotation handled separately via bcftools annotate in run_triage.sh
+# because gnomAD v4.1 is split per-chromosome (~60GB total)
+# See: /path/to/references/triage/gnomad/

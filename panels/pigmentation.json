@@ -1,0 +1,98 @@
+{
+  "name": "Pigmentation Genetics",
+  "version": "1.0",
+  "genome_build": "GRCh38",
+  "description": "10-gene pigmentation panel covering hair, eye, and skin colour. Key variants from HIrisPlex-S and GWAS literature.",
+  "genes": [
+    {
+      "symbol": "MC1R",
+      "ensembl": "ENSG00000258839",
+      "chrom": "chr16",
+      "start": 89919520,
+      "end": 89921471,
+      "key_variants": ["rs1805005", "rs1805006", "rs2228479", "rs11547464", "rs1805007", "rs1805008", "rs1805009", "rs885479"],
+      "notes": "Major red hair / fair skin gene. R variants (rs1805007 R151C, rs1805008 R160W, rs1805009 D294H) are high-penetrance."
+    },
+    {
+      "symbol": "OCA2",
+      "ensembl": "ENSG00000104044",
+      "chrom": "chr15",
+      "start": 27754876,
+      "end": 28099366,
+      "key_variants": ["rs1800407"],
+      "notes": "Oculocutaneous albinism type 2. Also associated with blue/brown eye colour."
+    },
+    {
+      "symbol": "HERC2",
+      "ensembl": "ENSG00000128731",
+      "chrom": "chr15",
+      "start": 28111043,
+      "end": 28322183,
+      "key_variants": ["rs12913832"],
+      "notes": "rs12913832 is the strongest single predictor of blue vs brown eye colour. Acts as enhancer for OCA2."
+    },
+    {
+      "symbol": "SLC45A2",
+      "ensembl": "ENSG00000164175",
+      "chrom": "chr5",
+      "start": 33944721,
+      "end": 33984780,
+      "key_variants": ["rs16891982", "rs28777"],
+      "notes": "MATP gene. rs16891982 (L374F) strongly associated with light skin in Europeans."
+    },
+    {
+      "symbol": "SLC24A5",
+      "ensembl": "ENSG00000188467",
+      "chrom": "chr15",
+      "start": 48120989,
+      "end": 48142639,
+      "key_variants": ["rs1426654"],
+      "notes": "rs1426654 (A111T) nearly fixed in Europeans. Major light skin variant."
+    },
+    {
+      "symbol": "TYR",
+      "ensembl": "ENSG00000077498",
+      "chrom": "chr11",
+      "start": 89177866,
+      "end": 89295759,
+      "key_variants": ["rs1042602", "rs1126809"],
+      "notes": "Tyrosinase. Rate-limiting enzyme in melanin synthesis. Mutations cause OCA1."
+    },
+    {
+      "symbol": "TYRP1",
+      "ensembl": "ENSG00000107165",
+      "chrom": "chr9",
+      "start": 12693384,
+      "end": 12710448,
+      "key_variants": [],
+      "notes": "Tyrosinase-related protein 1. Mutations cause OCA3 (rufous albinism)."
+    },
+    {
+      "symbol": "IRF4",
+      "ensembl": "ENSG00000137265",
+      "chrom": "chr6",
+      "start": 391739,
+      "end": 411443,
+      "key_variants": ["rs12203592"],
+      "notes": "rs12203592 associated with freckling, brown hair, and skin pigmentation."
+    },
+    {
+      "symbol": "KITLG",
+      "ensembl": "ENSG00000049130",
+      "chrom": "chr12",
+      "start": 88491953,
+      "end": 88579200,
+      "key_variants": ["rs12821256"],
+      "notes": "KIT ligand / stem cell factor. rs12821256 associated with blonde hair."
+    },
+    {
+      "symbol": "ASIP",
+      "ensembl": "ENSG00000101440",
+      "chrom": "chr20",
+      "start": 34191498,
+      "end": 34228913,
+      "key_variants": ["rs6058017"],
+      "notes": "Agouti signalling peptide. Antagonist of MC1R. rs6058017 associated with darker pigmentation."
+    }
+  ]
+}
