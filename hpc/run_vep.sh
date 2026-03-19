@@ -114,6 +114,7 @@ apptainer exec \
     --offline \
     --cache \
     --dir_cache "${VEP_CACHE}" \
+    --cache_version 112 \
     --species homo_sapiens \
     --assembly GRCh38 \
     --fasta "${FASTA}" \
