@@ -83,6 +83,21 @@ if [[ ! -f "${VEP_SIF}" ]]; then
     echo
 fi
 
+# --- Pre-flight: validate cache version matches --cache_version ---------------
+CACHE_VERSION=112
+CACHE_SPECIES_DIR="${VEP_CACHE}/homo_sapiens/${CACHE_VERSION}_GRCh38"
+if [[ ! -d "${CACHE_SPECIES_DIR}" ]]; then
+    echo "ERROR: VEP cache not found at: ${CACHE_SPECIES_DIR}"
+    echo "Available caches:"
+    ls "${VEP_CACHE}/homo_sapiens/" 2>/dev/null || echo "  (none)"
+    echo
+    echo "Fix: download matching cache or update CACHE_VERSION in this script."
+    echo "  To download v${CACHE_VERSION}:"
+    echo "    cd ${VEP_CACHE} && curl -O https://ftp.ensembl.org/pub/release-${CACHE_VERSION}/variation/vep/homo_sapiens_vep_${CACHE_VERSION}_GRCh38.tar.gz && tar xzf homo_sapiens_vep_${CACHE_VERSION}_GRCh38.tar.gz"
+    exit 1
+fi
+echo "Cache validated: v${CACHE_VERSION} at ${CACHE_SPECIES_DIR}"
+
 # --- Extract chromosome if per-chr mode --------------------------------------
 if [[ -n "${CHR}" ]]; then
     CHR_VCF="${RESULTS}/vep/per_chr/input.${CHR}.vcf.gz"
@@ -114,7 +129,7 @@ apptainer exec \
     --offline \
     --cache \
     --dir_cache "${VEP_CACHE}" \
-    --cache_version 112 \
+    --cache_version "${CACHE_VERSION}" \
     --species homo_sapiens \
     --assembly GRCh38 \
     --fasta "${FASTA}" \
