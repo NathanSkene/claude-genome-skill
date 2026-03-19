@@ -32,7 +32,42 @@ You need a VCF file from whole genome sequencing.
 - [1000 Genomes Project](https://www.internationalgenome.org/) — Population-scale WGS data. Individual sample VCFs available from the [IGSR data portal](https://www.internationalgenome.org/data-portal/sample). Try sample NA12878 (well-characterised reference genome).
 - [openSNP](https://opensnp.org/) — Community-shared genotyping data (mostly array-based, not WGS, but works for variant lookups and panel extraction).
 
-### 2. Install dependencies
+### 2. Generate your VCF (from FASTQ or BAM)
+
+Most sequencing providers (Dante Labs, Nebula) deliver raw data as FASTQ or BAM files, not VCFs. You need to run a variant calling pipeline to produce the VCF this skill uses.
+
+**Recommended: [nf-core/sarek](https://nf-co.re/sarek)**
+
+Sarek is a production-grade germline/somatic variant calling pipeline. It handles alignment, duplicate marking, base recalibration, and variant calling with GATK HaplotypeCaller.
+
+```bash
+# From FASTQ files
+nextflow run nf-core/sarek \
+    --input samplesheet.csv \
+    --genome GRCh38 \
+    --tools haplotypecaller \
+    -profile docker
+
+# From BAM files (skip alignment)
+nextflow run nf-core/sarek \
+    --input samplesheet.csv \
+    --step variant_calling \
+    --genome GRCh38 \
+    --tools haplotypecaller \
+    -profile docker
+```
+
+The samplesheet format is documented in the [sarek usage docs](https://nf-co.re/sarek/latest/docs/usage). The output VCF will be in `results/variant_calling/haplotypecaller/`.
+
+**Alternative: [nf-core/raredisease](https://nf-co.re/raredisease)**
+
+If you want a more comprehensive analysis including structural variants, copy number variants, and clinical annotation, raredisease wraps multiple callers and adds ranking.
+
+**Running on HPC:** If you're on Imperial's CX3, see [claude-imperial-hpc-skill](https://github.com/NathanSkene/claude-imperial-hpc-skill) for PBS Pro configuration. Both pipelines need 16-64GB RAM and run well on cluster nodes.
+
+**Running locally:** Both pipelines work with `-profile docker` on a Mac/Linux machine with 16GB+ RAM, though a full 30x WGS genome takes 12-24 hours.
+
+### 3. Install skill dependencies
 
 ```bash
 # Python packages
@@ -45,7 +80,7 @@ brew install bcftools htslib
 sudo apt install bcftools tabix
 ```
 
-### 3. Prepare your VCF
+### 4. Prepare your VCF
 
 ```bash
 # Set your genome directory
@@ -64,7 +99,7 @@ bcftools annotate -a dbsnp.vcf.gz -c ID genome.vcf.gz -Oz -o genome.rsid.vcf.gz
 tabix -p vcf genome.rsid.vcf.gz
 ```
 
-### 4. Install the skill
+### 5. Install the skill
 
 ```bash
 # Clone to your Claude Code skills directory
@@ -74,7 +109,7 @@ git clone https://github.com/NathanSkene/claude-genome-skill.git ~/.claude/skill
 export GENOME_DIR=~/genome
 ```
 
-### 5. Use it
+### 6. Use it
 
 In Claude Code:
 ```
