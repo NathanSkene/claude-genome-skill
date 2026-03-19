@@ -116,7 +116,7 @@ nextflow run "${PIPELINE}" \
     --intervals_wgs "/rds/general/user/${HPC_USER:-YOUR_USERNAME}/home/.nextflow/assets/nf-core/raredisease/assets/chr1-chr22chrXchrYchrM_grch38.interval_list" \
     --intervals_y "/rds/general/user/${HPC_USER:-YOUR_USERNAME}/home/.nextflow/assets/nf-core/raredisease/assets/chrY_grch38.interval_list" \
     --vep_cache "${REFDIR}/vep" \
-    --vep_cache_version 112 \
+    --vep_cache_version 114 \
     --cadd_resources "${REFDIR}/cadd" \
     --skip_subworkflows me_calling,me_annotation,mt_annotation,repeat_annotation,repeat_calling,sv_annotation,sv_calling,snv_annotation,generate_clinical_set \
     --skip_tools gens,germlinecnvcaller,vcf2cytosure,eklipse \

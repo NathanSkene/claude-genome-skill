@@ -120,7 +120,7 @@ Infrastructure: Imperial HPC CX3 (PBS Pro + Apptainer) for compute; local Mac fo
 - **Aligner:** BWA-MEM2 to GRCh38 (hs38DH)
 - **Variant caller:** DeepVariant v1.6+ (CNN-based, artifact-resistant)
 - **SV caller:** Manta
-- **Annotation:** Ensembl VEP v112+ with plugins:
+- **Annotation:** Ensembl VEP v114 with plugins:
   - LOFTEE (HC/LC LoF classification)
   - SpliceAI (splice disruption prediction)
   - CADD v1.7 (combined deleteriousness)

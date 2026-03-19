@@ -45,22 +45,24 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
-# 2. VEP Cache (v112, GRCh38)
+# 2. VEP Cache (v114, GRCh38)
+#    v114 includes: MaveDB (7.7M variants), PrimateAI-3D,
+#    updated LOEUF v4.1, AllOfUs frequencies, dbNSFP v5.0c
 # ─────────────────────────────────────────────────────────────
 VEP_DIR="${REFDIR}/vep"
 mkdir -p "${VEP_DIR}"
 
-if [[ ! -d "${VEP_DIR}/homo_sapiens" ]]; then
-    echo "--- Downloading VEP cache v112 for GRCh38 (~15 GB) ---"
+if [[ ! -d "${VEP_DIR}/homo_sapiens/114_GRCh38" ]]; then
+    echo "--- Downloading VEP cache v114 for GRCh38 (~15 GB) ---"
     cd "${VEP_DIR}"
 
-    wget -c "https://ftp.ensembl.org/pub/release-112/variation/vep/homo_sapiens_vep_112_GRCh38.tar.gz"
-    tar xzf homo_sapiens_vep_112_GRCh38.tar.gz
-    rm -f homo_sapiens_vep_112_GRCh38.tar.gz
+    wget -c "https://ftp.ensembl.org/pub/release-114/variation/vep/homo_sapiens_vep_114_GRCh38.tar.gz"
+    tar xzf homo_sapiens_vep_114_GRCh38.tar.gz
+    rm -f homo_sapiens_vep_114_GRCh38.tar.gz
 
-    echo "VEP cache: DONE"
+    echo "VEP cache v114: DONE"
 else
-    echo "VEP cache: already staged"
+    echo "VEP cache v114: already staged"
 fi
 
 # ─────────────────────────────────────────────────────────────
@@ -116,7 +118,47 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────
-# 5. gnomAD v4 Sites VCF (GRCh38)
+# 5. AlphaMissense Precomputed Scores (GRCh38)
+# ─────────────────────────────────────────────────────────────
+AM_DIR="${REFDIR}/alphamissense"
+mkdir -p "${AM_DIR}"
+
+if [[ ! -f "${AM_DIR}/AlphaMissense_hg38.tsv.gz" ]]; then
+    echo "--- Downloading AlphaMissense scores (~3 GB) ---"
+    cd "${AM_DIR}"
+
+    wget -c "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz"
+    wget -c "https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz.tbi"
+
+    echo "AlphaMissense: DONE"
+else
+    echo "AlphaMissense: already staged"
+fi
+
+# ─────────────────────────────────────────────────────────────
+# 6. REVEL Precomputed Scores (GRCh38)
+# ─────────────────────────────────────────────────────────────
+REVEL_DIR="${REFDIR}/revel"
+mkdir -p "${REVEL_DIR}"
+
+if [[ ! -f "${REVEL_DIR}/new_tabbed_revel_grch38.tsv.gz" ]]; then
+    echo "--- Downloading REVEL scores (~1 GB) ---"
+    cd "${REVEL_DIR}"
+
+    wget -c "https://rothsj06.dmz.hpc.mssm.edu/revel-v1.3_all_chromosomes.zip"
+    unzip revel-v1.3_all_chromosomes.zip
+    # Convert to tabbed format required by VEP plugin
+    cat revel_with_transcript_ids | tr "," "\\t" | sed '1s/.*/#&/' | bgzip > new_tabbed_revel_grch38.tsv.gz
+    tabix -f -s 1 -b 2 -e 2 new_tabbed_revel_grch38.tsv.gz
+    rm -f revel-v1.3_all_chromosomes.zip revel_with_transcript_ids
+
+    echo "REVEL: DONE"
+else
+    echo "REVEL: already staged"
+fi
+
+# ─────────────────────────────────────────────────────────────
+# 7. gnomAD v4 Sites VCF (GRCh38)
 # ─────────────────────────────────────────────────────────────
 GNOMAD_DIR="${REFDIR}/gnomad"
 mkdir -p "${GNOMAD_DIR}"
@@ -284,13 +326,15 @@ check_staged() {
 }
 
 check_staged "GRCh38 reference genome" "${GENOME_DIR}/Homo_sapiens_assembly38.fasta"
-check_staged "VEP cache v112" "${VEP_DIR}/homo_sapiens"
+check_staged "VEP cache v114" "${VEP_DIR}/homo_sapiens/114_GRCh38"
 check_staged "CADD v1.7 SNVs" "${CADD_DIR}/whole_genome_SNVs.tsv.gz"
 check_staged "CADD v1.7 indels" "${CADD_DIR}/gnomad.genomes.r4.0.indel.tsv.gz"
 check_staged "SpliceAI SNVs" "${SPLICEAI_DIR}/spliceai_scores.raw.snv.hg38.vcf.gz"
 check_staged "SpliceAI indels" "${SPLICEAI_DIR}/spliceai_scores.raw.indel.hg38.vcf.gz"
 check_staged "gnomAD v4" "${GNOMAD_DIR}/gnomad.genomes.v4.1.sites.af-only.vcf.bgz"
 check_staged "LOFTEE data" "${LOFTEE_DIR}/gerp_conservation_scores.homo_sapiens.GRCh38.bw"
+check_staged "AlphaMissense" "${AM_DIR}/AlphaMissense_hg38.tsv.gz"
+check_staged "REVEL" "${REVEL_DIR}/new_tabbed_revel_grch38.tsv.gz"
 echo "  pext data                           SKIPPED (Hail Table only)"
 check_staged "Segmental duplications" "${SEGDUP_DIR}/GRCh38GenomicSuperDup.bed.gz"
 check_staged "Low-complexity regions" "${LCR_DIR}/GRCh38_low_complexity_regions.bed.gz"
