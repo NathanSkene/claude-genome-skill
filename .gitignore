@@ -5,3 +5,6 @@ __pycache__/
 *.vcf.gz.tbi
 *.vcf.gz.csi
 prs_results.json
+# HPO data files (downloaded at runtime, ~15MB each)
+hpo/genes_to_phenotype.txt
+hpo/phenotype_to_genes.txt
