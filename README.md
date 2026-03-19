@@ -36,6 +36,7 @@ All queries run locally against your VCF. Annotation uses free public APIs (MyVa
 ### Extended pipeline (WIP)
 
 - **HPC scripts** — End-to-end pipeline: BAM→FASTQ conversion, nf-core/raredisease variant calling, reference staging, container management
+- **Standalone VEP annotation** — VEP v114 with CADD, LOFTEE, SpliceAI, AlphaMissense, and REVEL plugins (runs independently from the nf-core pipeline for easier upgrades)
 - **Variant triage** — vcfanno annotation + slivar tiered filtering (artifact detection, allele frequency, clinical significance)
 - **Clinical reports** — HTML + Markdown report generation from triage output
 - **PRS batch computation** — Orchestrate pgsc_calc across all PGS Catalog scores with retry logic
@@ -154,6 +155,7 @@ claude-genome-skill/
 │   ├── run_pgscalc.sh           #   Single PRS batch
 │   ├── prs_batch.sh             #   Multi-batch PRS orchestrator
 │   ├── prs_retry_failed.sh      #   Retry failed PRS batches
+│   ├── run_vep.sh                #   Standalone VEP v114 annotation
 │   ├── monitor.sh               #   Job monitoring
 │   ├── pull_containers.sh       #   Container download
 │   ├── download_triage_refs.sh  #   Triage reference data
@@ -210,6 +212,27 @@ Scripts assume PBS Pro on Imperial CX3 but can be adapted for SLURM or other sch
 export HPC_USER=your_username
 export SAMPLE_ID=your_sample
 export GENOME_DIR=/path/to/your/project
+```
+
+### Standalone VEP Annotation (`hpc/run_vep.sh`)
+
+VEP annotation runs as a separate PBS job rather than inside nf-core/raredisease. This decouples the annotation version from the pipeline container, making upgrades straightforward.
+
+**Current setup:** VEP v114 container with plugins:
+- **CADD v1.7** — Combined deleteriousness score
+- **LOFTEE** — Loss-of-function classification (HC/LC)
+- **SpliceAI** — Splice disruption prediction
+- **AlphaMissense** — Protein structure-based pathogenicity
+- **REVEL** — Ensemble missense predictor
+
+VEP v114 cache also includes MaveDB (7.7M functionally-assessed variants), PrimateAI-3D, updated LOEUF v4.1 constraint scores, and AllOfUs population frequencies via dbNSFP v5.0c.
+
+```bash
+# Stage all references (VEP cache, CADD, SpliceAI, AlphaMissense, REVEL, LOFTEE)
+bash hpc/stage_references.sh
+
+# Run VEP on DeepVariant output
+qsub hpc/run_vep.sh /path/to/deepvariant.vcf.gz
 ```
 
 ### Triage Pipeline (`triage/`)
