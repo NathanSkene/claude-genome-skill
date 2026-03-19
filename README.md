@@ -39,8 +39,9 @@ All queries run locally against your VCF. Annotation uses free public APIs (MyVa
 - **Standalone VEP annotation** — VEP v114 with CADD, LOFTEE, SpliceAI, AlphaMissense, and REVEL plugins (runs independently from the nf-core pipeline for easier upgrades)
 - **Variant triage** — vcfanno annotation + slivar tiered filtering (artifact detection, allele frequency, clinical significance)
 - **Clinical reports** — HTML + Markdown report generation from triage output
-- **PRS batch computation** — Orchestrate pgsc_calc across all PGS Catalog scores with retry logic
 - **Variant validation** — Mini-BAM extraction for IGV, HTML report generation, interactive validation checklist
+
+> **PRS computation** has moved to [vcf-to-prs](https://github.com/NathanSkene/vcf-to-prs). The PRS scripts in this repo (`prs_batch.sh`, `run_pgscalc.sh`, etc.) are kept for reference but are no longer maintained here.
 
 ## Quick Start
 
@@ -248,13 +249,9 @@ Requires: slivar, vcfanno, bcftools, and reference data (download with `hpc/down
 
 Produces a clinical-style HTML report from triage output. Includes variant tables, gene summaries, and ACMG classification.
 
-### PRS Batch System (`hpc/` + `prs/`)
+### PRS Batch System → [vcf-to-prs](https://github.com/NathanSkene/vcf-to-prs)
 
-Computes polygenic risk scores across all PGS Catalog entries:
-1. `download_pgs_ids.py` fetches score IDs from the PGS Catalog API
-2. `prs_batch.sh` submits batched pgsc_calc jobs
-3. `prs_retry_failed.sh` retries failed batches
-4. `process_prs_results.py` converts pgsc_calc output to the JSON format that `genome_query.py` reads
+PRS computation has been moved to a dedicated repository. See [vcf-to-prs](https://github.com/NathanSkene/vcf-to-prs) for pgsc_calc orchestration, batch processing, and result parsing.
 
 ## Polygenic Risk Scores
 
@@ -325,7 +322,7 @@ Ideas for improvement:
 
 ## Related
 
-- [claude-nextflow-skill](https://github.com/NathanSkene/claude-nextflow-skill) — Automated nf-core pipeline orchestration (samplesheet generation, data type detection, SRA/GEO fetch)
+- [vcf-to-prs](https://github.com/NathanSkene/vcf-to-prs) — Polygenic risk score computation pipeline (pgsc_calc orchestration, batch processing)
 - [claude-imperial-hpc-skill](https://github.com/NathanSkene/claude-imperial-hpc-skill) — PBS Pro reference for Imperial's CX3 cluster
 
 ## License
